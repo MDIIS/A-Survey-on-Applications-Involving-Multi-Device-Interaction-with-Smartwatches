@@ -309,7 +309,8 @@
 				//.text("No filters applied");
 
 		d3.select("#results")
-			.style("width", width + "px");
+			.style("width", width + "px")
+			.style("height", 500 + "px");
 
 		redraw();
 	}
