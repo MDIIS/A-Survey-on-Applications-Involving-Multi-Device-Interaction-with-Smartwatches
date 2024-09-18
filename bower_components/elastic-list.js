@@ -205,7 +205,7 @@
 
 		d3.select("#results")
 			.style("width", width + "px")
-			.style("height", 500 + "px");
+			.style("height", 300 + "px");
 
 		redraw();
 	}
@@ -365,7 +365,7 @@
 		{
 			if(d.__filtered__ )
 				//html += "<p>" + d.Title + " , "  + d.PublicationYear + " , "  + d.PublicationVenue + d.
-				html += "<p>" + d.Title 
+				html += "<p style='margin-bottom: 5px;'>" + d.Title 
 			//+ " - " + "<b>" + d.value + " " + d.Array + ". </b>" //+ d.category.capitalize() + ", " + d.country + "<span class='price-motivation'> " + d.motivation+ "</span></p>"
 		});		
 		d3.select("#results").html(html);

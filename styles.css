@@ -5,12 +5,13 @@ body {
   
   h1 {
     margin-bottom: 5px;
-    color:#000000
+    font-size: 32px;
+    color:#000000;
   }
   h2 {
     margin-bottom: 5px;
     font-size: 22px;
-    color:#000000
+    color:#000000;
   }
   
   #mytooltip {
@@ -41,7 +42,7 @@ body {
     float: left;
     width: 100%;
     border: 1px solid #fff;
-    color: #e7efc0;
+    color: #ffffff;
     background-color: #4e8531;
     padding: 4px 0 0 5px;
     -webkit-box-sizing: border-box;
@@ -123,7 +124,7 @@ body {
   .results-title {
     font-family: "Arial";
     font-weight: bold;
-    margin: 5px;
+    margin: 3px;
     font-size: 16px;
     color: #000000;
   }
@@ -131,16 +132,15 @@ body {
   #results {
     font-family: "Arial";
     font-size: 11px;
-    height: 200px;
     overflow-y: auto;
-    border-top: 1px solid #4e8531;
+    border-top: 1px solid #000000;
     background-color: #ffffff;
-    padding: 0 5px;
     color: #000000;
+    border-bottom: 1px solid #000000;
   }
   
   #results p {
-    border-bottom: 1px solid #fff;
+    
   }
   
   .price-motivation {
