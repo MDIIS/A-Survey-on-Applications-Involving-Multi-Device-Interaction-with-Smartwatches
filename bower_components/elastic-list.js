@@ -1,11 +1,9 @@
-/**
- * @author Xavi Gimenez / xavi@xavigimenez.net
- */
+
 
 (function(){
 	//data vars
 	var affiliationDim = ['name', 'Affiliation at the time of award'];
-	var dimensionsArray = ['Title','PublicationYear','PublicationVenue', 'PairedDevice', 'Role', 'Application'];
+	var dimensionsArray = ['Title','Publication Year','Publication Venue', 'Paired Device', 'Role', 'Context'];
 	var dimensions = {};
 	var documents;
 
@@ -37,31 +35,6 @@
 		dimensions[dim].filters = d3.set();
 	});
 
-	// var onDataLoaded = function(error, csv) {
-	// 	console.log("csv:", csv);
-	// 	console.log(csv.length + " documents");
-	// 	documents = csv;
-	  
-	// 	 if (Array.isArray(documents)) {
-	// 	documents.forEach(function(d) {
-	// 					//add flag to check if a document contains the filtered terms
-	// 					d.__filtered__ = true;
-
-	// 					dimensionsArray.forEach(function(dim)
-	// 					{
-	// 						if(d[dim] != "")
-	// 							if(d[dim] in dimensions[dim].values)
-	// 								dimensions[dim].values[d[dim]]++
-	// 							else
-	// 								dimensions[dim].values[d[dim]] = 1;
-	// 					});
-	// 	});
-	
-	// 	draw();
-	// 	 } else {
-	// 	   console.error("Invalid data format. Expected an array.");
-	// 	 }
-	//   };
 	
 	var onDataLoaded = function(error, csv) {
 		console.log("csv:", csv);
@@ -94,29 +67,6 @@
 		}
 	};
 	
-	
-
-	
-	// var updateFilters = function(dim, item)
-	// {
-	// 	if(dimensions[dim].filters.has(item))
-	// 	    dimensions[dim].filters.remove(item);
-	// 	else
-	// 		dimensions[dim].filters.add(item);
-
-	// 	if(!existFilters())
-	// 		d3.select(".elastic-list-filters").select("p").text("No filters applied");
-	// 	else
-	// 	{
-	// 		var values = [];
-	// 		for(var i=0; i<dimensionsArray.length; i++)
-	// 			values = values.concat(dimensions[dimensionsArray[i]].filters.values());
-
-	// 		d3.select(".elastic-list-filters").select("p").text("Filtering by: " + values.toString() );
-	// 	}
-
-	// 	updateData();
-	// }
 
 	var updateFilters = function(dim, item) {
 		// 处理 & 分隔的情况，将 item 分割成多个单独的项
@@ -153,56 +103,6 @@
 			exist = exist || !dimensions[dimensionsArray[i]].filters.empty();
 		return exist;
 	}
-
-
-
-	// //update the attribute '__filtered__' on each document based on the current active filters 
-	// var updateData = function()
-	// {
-	// 	//reset all the counters
-	// 	dimensionsArray.forEach(function(dim)
-	// 	{
-	// 		d3.keys(dimensions[dim].values).forEach(function(key)
-	// 		{
-	// 			dimensions[dim].values[key] = 0;
-	// 		});
-	// 	});
-
-	// 	//if there are no filters, all documents pass the criteria
-	// 	if(!existFilters())
-	// 	{
-	// 		documents.forEach(function(d)
-	// 		{
-	// 			d.__filtered__ = true;
-	// 			dimensionsArray.forEach(function(dim)
-	// 			{
-	// 				dimensions[dim].values[d[dim]]++;
-	// 			});
-	// 		});
-	// 	}
-	// 	//otherwise loop through the documents to see which ones pass the filter criteria
-	// 	else
-	// 	{			
-	// 		documents.forEach(function(d)
-	// 		{
-	// 			//document is filtered if contains ALL the filter terms
-	// 			d.__filtered__ = true;
-	// 			for(var i=0; i<dimensionsArray.length && d.__filtered__ == true; i++)
-	// 				if(!dimensions[dimensionsArray[i]].filters.empty())
-	// 					d.__filtered__ = d.__filtered__ && dimensions[dimensionsArray[i]].filters.has(d[dimensionsArray[i]]);
-
-	// 			//if document pass the filters, increase ocurrence of this document for each filter term 
-	// 			if(d.__filtered__ == true)				
-	// 				dimensionsArray.forEach(function(dim)
-	// 				{
-	// 					dimensions[dim].values[d[dim]]++;
-	// 				});
-	// 		});
-	// 	}	
-		
-	// 	redraw();		
-	// }
-
 
 
 
@@ -259,11 +159,6 @@
 		// 重新绘制图表或更新界面
 		redraw();
 	}
-
-
-
-	
-
 
 
 
@@ -469,7 +364,8 @@
 		documents.forEach(function(d)
 		{
 			if(d.__filtered__ )
-				html += "<p>" + d.Title + " , "  + d.PublicationYear + " , "  + d.PublicationVenue
+				//html += "<p>" + d.Title + " , "  + d.PublicationYear + " , "  + d.PublicationVenue + d.
+				html += "<p>" + d.Title 
 			//+ " - " + "<b>" + d.value + " " + d.Array + ". </b>" //+ d.category.capitalize() + ", " + d.country + "<span class='price-motivation'> " + d.motivation+ "</span></p>"
 		});		
 		d3.select("#results").html(html);
@@ -481,5 +377,5 @@
     	return this.charAt(0).toUpperCase() + this.slice(1);
 	}
 
-	d3.csv("Tab2.csv", onDataLoaded);
+	d3.csv("Tab.csv", onDataLoaded);
 }());
