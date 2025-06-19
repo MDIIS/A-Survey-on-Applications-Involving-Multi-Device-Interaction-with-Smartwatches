@@ -1,90 +1,95 @@
-@elastic-list-border: 1px solid grey;
-@spacing-texts: 4px 0 0 5px;
-@font: "Arial";
-@color-selected-item: #9ecae1;
-@border-dotted: 1px dotted black;
+/* === 全局变量定义（LESS变量） === */
+@elastic-list-border: 1px solid grey; /* 弹性列表边框 */
+@spacing-texts: 4px 0 0 5px; /* 文本内边距 */
+@font: "Arial"; /* 全局字体 */
+@color-selected-item: #9ecae1; /* 被选中项的背景色 */
+@border-dotted: 1px dotted black; /* 点状边框样式 */
 
+
+
+/* === 页面基础样式 === */
 body {
-	background-color: ghostwhite;
-	padding-bottom: 40px;
+	background-color: ghostwhite; /* 页面背景色 */
+	padding-bottom: 40px; /* 页面底部内边距 */
 }
 
 h1 {
-	margin-bottom: 0;3690C0
-}
-#mytooltip {
-  border: 1px solid #e0e0e0;
-  padding: 5px 4px;
-  background-color: "#3d424f";
-  color: white;
-  position: absolute;
-  font-family: @font;
-  font-size: 10px;
-  max-width: 175px;
+	margin-bottom: 0;
+	color: #3690C0; /* 修复颜色写错的问题 */
+	font-family: "Segoe UI";
 }
 
+h2 {
+	font-family: "Segoe UI";
+}
+
+
+/* === 弹性列表整体容器样式 === */
 .elastic-list {
 	margin-top: 25px;
 	padding: 2px;
-	background: #f0;
-  	font-family: @font;
-  	font-size: 12px;
-  	-webkit-box-sizing: content-box;
-  	-moz-box-sizing: content-box;
-  	box-sizing: content-box;
-
-	
+	background: #f0f0f0; /* 修复颜色 */
+	font-family: @font;
+	font-size: 12px;
+	box-sizing: content-box;
 }
 
+
+/* === 各维度标题头样式 === */
 .elastic-list-dimension-header {
 	font-size: 12px;
 	font-weight: bold;
 	float: left;
 	border: 1px solid white;
-  	color: #f0f0f0;
-  	background-color: #333333;
-  	padding: @spacing-texts;
-	-webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-          box-sizing: border-box;
+	color: #f0f0f0;
+	background-color: #333333;
+	padding: @spacing-texts;
+	box-sizing: border-box;
 }
 
+
+/* === 每一列的容器样式 === */
 .elastic-list-dimension {
-	//position: relative;
 	float: left;
-	border: none; //1px solid black;
+	border: none; /* 取消边框 */
 	overflow-y: auto;
-  	overflow-x: hidden;
-  	color: #444444;
+	overflow-x: hidden;
+	color: #444444;
 }
 
+/* === 各维度项样式 === */
 .elastic-list-dimension-item {
 	position: relative;
 	border: 1px solid white;
 	background-color: #a5a5a5;
 	font-size: 11px;
-	font-family: @font;	
+	font-family: @font;
+
+	/* 文字排版 */
 	p {
 		margin: @spacing-texts;
-		float:left;
+		float: left;
 		display: inline;
+
 		&.key {
-			width: 70%
+			width: 70%; /* 项目名称部分 */
 		}
 		&.value {
 			float: right;
-			margin-right: 22px;
+			margin-right: 22px; /* 项目数值部分 */
 		}
-	}		
-}
-
-.elastic-list-dimension-item-hover {
-	background-color: lightgrey;
-	p {
-		font-weight: bold;
 	}
 }
 
+/* === 鼠标悬停样式 === */
+.elastic-list-dimension-item-hover {
+	background-color: lightgrey;
+	p {
+		font-weight: bold; /* 加粗显示 */
+	}
+}
+
+/* === 筛选区样式 === */
 #filtering {
 	border-top: @border-dotted;
 	font-size: 12px;
@@ -98,59 +103,68 @@ h1 {
 		margin: 0;
 		height: 25px;
 		color: #222222;
+
 		p {
-			margin: 0;
+			margin: 0; /* 清除段落默认边距 */
 		}
 		span {
-			color: @color-selected-item;
+			color: @color-selected-item; /* 高亮被选项 */
 		}
 	}
 }
+
+
+/* === 筛选状态下项的样式 === */
 .filter {
 	background-color: @color-selected-item;
 }
 
 .filter-item {
-	float:left;
+	float: left;
 }
 
+/* === 搜索结果标题 === */
 .results-title {
-	font-family: @font;
+	font-family: "Segoe UI";
 	font-weight: bold;
 	margin: 0;
-	font-size: 12px;
+	font-size: 20px;
 }
 
+/* === 搜索结果列表区 === */
 #results {
-	font-family: @font;
-	font-size: 11px;
+	font-family: "Segoe UI";
+	font-size: 12px;
 	height: 200px;
 	overflow-y: auto;
 	border-top: 1px solid #909090;
 	background-color: #f0f0f0;
 	padding: 0 5px;
+
 	p {
 		border-bottom: 1px solid white;
 	}
 }
 
+
+/* === 附加信息风格样式 === */
 .price-motivation {
 	font-style: italic;
 	color: grey;
 }
 
-
+/* === 页脚社交信息样式 === */
 .post-info-social {
 	ul {
-	list-style: none;
-	margin: 0;
-	padding: 0;
+		list-style: none;
+		margin: 0;
+		padding: 0;
 	}
-	
+
 	span.links {
 		margin-right: 30px;
 	}
-	
+
 	li {
 		float: left;
 		width: 16px;

@@ -1,42 +1,42 @@
+/* === 页面基础样式 === */
 body {
     background-color: #FFFFFF;
     padding-bottom: 40px;
-  }
-  
-  h1 {
+    font-family: "Segoe UI";
+}
+
+.container {
+    max-width: 2000px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+h1 {
     margin-bottom: 5px;
     font-size: 32px;
-    color:#000000;
-  }
-  h2 {
+    color: #000000;
+}
+
+h2 {
     margin-bottom: 5px;
-    font-size: 22px;
-    color:#000000;
-  }
-  
-  #mytooltip {
-    border: 1px solid #e0e0e0;
-    padding: 5px 4px;
-    background-color: #000000;
-    color: #fff;
-    position: absolute;
-    font-family: "Arial";
-    font-size: 10px;
-    max-width: 175px;
-  }
-  
-  .elastic-list {
+    font-size: 16px;
+    color: #000000;
+    padding: 2px;
+}
+
+/* === 弹性列表主容器样式 === */
+.elastic-list {
     margin-top: 25px;
+    display: block;
     padding: 2px;
     background: #ffffff;
-    font-family: "Arial";
     font-size: 12px;
-    -webkit-box-sizing: content-box;
-    -moz-box-sizing: content-box;
     box-sizing: content-box;
-  }
-  
-  .elastic-list-dimension-header {
+    float: none !important;
+}
+
+/* === 每个维度标题头样式 === */
+.elastic-list-dimension-header {
     font-size: 16px;
     font-weight: bold;
     float: left;
@@ -44,140 +44,125 @@ body {
     border: 1px solid #fff;
     color: #ffffff;
     background-color: #4e8531;
-    padding: 4px 0 0 5px;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
+    padding: 6px 0 0 5px;
     box-sizing: border-box;
-  }
-  
-  .elastic-list-dimension {
+    display: inline-block;
+}
+
+/* === 维度容器列样式 === */
+.elastic-list-dimension {
     float: left;
     border: none;
     overflow-y: auto;
     overflow-x: hidden;
     color: #000000;
-  }
-  
-  .elastic-list-dimension-item {
+}
+
+/* === 维度项单元格样式 === */
+.elastic-list-dimension-item {
     position: relative;
     border: 1px solid #ffffff;
     background-color: #e7efc0;
-    font-size: 11px;
-    font-family: "Arial";
-  }
-  
-  .elastic-list-dimension-item p {
-    margin: 4px 0 0 5px;
-    float: left;
-    display: inline;
-  }
-  
-  .elastic-list-dimension-item p.key {
-    width: 70%;
-  }
-  
-  .elastic-list-dimension-item p.value {
+    font-size: 12px;
+    text-align: left;
+    vertical-align: top;
+    padding: 4px;
+    min-height: 45px; /* 防止高度塌陷 */
+}
+
+/* === 每项中的文字样式 === */
+.elastic-list-dimension-item p {
+    margin: 4px;
+    float: none;
+    display: block;
+    text-align: left;         /* 文字靠左 */
+    line-height: 1.2em;
+}
+
+.elastic-list-dimension-item p.key {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
+  font-size: 12px;
+  line-height: 1.2em;
+  max-height: 3.6em; /* 1.2em * 3 lines */
+}
+
+.elastic-list-dimension-item p.value {
     float: right;
-    margin-right: 22px;
+    margin-right: 15px;
   }
-  
-  .elastic-list-dimension-item-hover {
+
+/* === 鼠标悬停效果 === */
+.elastic-list-dimension-item-hover {
     background-color: #bad399;
-  }
-  
-  .elastic-list-dimension-item-hover p {
+}
+
+.elastic-list-dimension-item-hover p {
     font-weight: bold;
-  }
-  
-  #filtering {
+}
+
+/* === 筛选区域样式 === */
+#filtering {
     border-top: 1px dotted #000;
     font-size: 12px;
     font-weight: bold;
     margin-right: 25px;
     height: 50px;
-  }
-  
-  #filtering .elastic-list-filters {
+}
+
+#filtering .elastic-list-filters {
     padding-top: 5px;
     font-weight: bold;
     margin: 0;
     height: 25px;
     color: #222;
-  }
-  
-  #filtering .elastic-list-filters p {
+}
+
+#filtering .elastic-list-filters p {
     margin: 0;
-  }
-  
-  #filtering .elastic-list-filters span {
+}
+
+#filtering .elastic-list-filters span {
     color: #9ecae1;
-  }
-  
-  .filter {
+}
+
+/* === 被筛选中的项背景色 === */
+.filter {
     background-color: #bad399;
-  }
-  
-  .filter-item {
+}
+
+.filter-item {
     float: left;
-  }
-  
-  .results-title {
-    font-family: "Arial";
+}
+
+/* === 结果区域标题 === */
+.results-title {
+    margin-top: 25px;
     font-weight: bold;
-    margin: 3px;
     font-size: 16px;
     color: #000000;
-  }
-  
-  #results {
-    font-family: "Arial";
-    font-size: 11px;
+}
+
+/* === 搜索结果区域 === */
+#results {
+    font-size: 12px;
     overflow-y: auto;
-    border-top: 1px solid #000000;
+    border-top: 2px solid #000000;
     background-color: #ffffff;
     color: #000000;
-    border-bottom: 1px solid #000000;
-  }
-  
-  #results p {
-    
-  }
-  
-  .price-motivation {
-    font-style: italic;
-    color: #808080;
-  }
-  
-  .post-info-social ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  
-  .post-info-social span.links {
-    margin-right: 30px;
-  }
-  
-  .post-info-social li {
-    float: left;
-    width: 16px;
-    height: 36px;
-    padding-left: 3px;
-  }
-  
-  .post-info-social a {
-    color: #000;
-    text-decoration: none;
-    outline-style: none;
-    font-weight: bold;
-  }
-  
-  .post-info-social img {
-    float: left;
-    margin: 10px 24px 20px 0;
-  }
-  
-  .github {
+    border-bottom: 2px solid #000000;
+}
+
+#results p {
+    /* 可添加段落样式 */
+}
+
+/* === GitHub 图标间距 === */
+.github {
     margin-right: 35px;
-  }
-  
+}

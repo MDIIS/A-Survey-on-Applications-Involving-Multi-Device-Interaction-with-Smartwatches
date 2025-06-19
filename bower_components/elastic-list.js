@@ -1,76 +1,71 @@
 
 
 (function(){
-	//data vars
-	var affiliationDim = ['name', 'Affiliation at the time of award'];
-	var dimensionsArray = ['Title','Publication Year','Publication Venue', 'Paired Device', 'Role', 'Context'];
-	var dimensions = {};
-	var documents;
+	// 数据变量
+	var affiliationDim = ['name', 'Affiliation at the time of award']; // 映射展示名
+	var dimensionsArray = ['Title','Publication Year','Publication Venue', 'System Number', 'Configuration', 'Role', 'SW Interaction', 'Application Domain', 'Relationship', 'Scale', 'Dynamics', 'Space']; // 要处理的维度
+	var dimensions = {}; // 存储每个维度的值和过滤器
+	var documents; // 原始数据列表
+	const isTall = (name) => name === 'Title' || name === 'Application Domain';
 
-	//d3 vars
-	var elasticList,
-		xAxis,
-		x,
-		margin,
-		cols,
-		tooltip,
-		header_height = 25,
-		dimensionHeaderHeight = 40;
+	// d3 使用的变量
+	var elasticList, xAxis, x, margin, cols, tooltip;
+	var header_height = 25, dimensionHeaderHeight = 40;
+	var trimmerAt = 35, heightEmpty = "4px", sortValues = false;
 
-	//
-	var trimmerAt = 35,
-		heightEmpty = "4px",
-		sortValues = false;
 
+	// 初始化 tooltip
 	tooltip = d3.select("#mytooltip")
         .style("visibility", "hidden")
         .style("background-color", "#333333");
 
-	//populate main object to hold all data
-	dimensionsArray.forEach(function(dim)
-	{
-		dimensions[dim] = {};
-		dimensions[dim].values = {};	
-		dimensions[dim].filters = {};
-		dimensions[dim].filters = d3.set();
+	// 初始化维度对象结构
+	dimensionsArray.forEach(function(dim) {
+		dimensions[dim] = {
+			allValues: new Set(), // ✅ 记录所有可能值
+			values: {},
+			filters: d3.set()
+		};
 	});
 
-	
+
+	// 加载数据并初始化维度数据
 	var onDataLoaded = function(error, csv) {
-		console.log("csv:", csv);
 		if (error) throw error;
-	
+
 		console.log(csv.length + " documents");
+		console.log("CSV header fields:", Object.keys(csv[0]));
 		documents = csv;
-	
+
 		if (Array.isArray(documents)) {
 			documents.forEach(function(d) {
-				d.__filtered__ = true;
-	
+				d.__filtered__ = true; // 标记文档为默认通过筛选
 				dimensionsArray.forEach(function(dim) {
-					if (d[dim] != "") {
-						var values = d[dim].split('&').map(function(value) { return value.trim(); });
-						values.forEach(function(value) {
-							if (value in dimensions[dim].values) {
-								dimensions[dim].values[value]++;
-							} else {
-								dimensions[dim].values[value] = 1;
-							}
+					const field = d[dim];
+					if (typeof field === 'string' && field.trim() !== "") {
+						// 收集所有可能值
+						field.split('&').forEach(function(value) {
+						  value = value.trim();
+						  if (value) {
+							dimensions[dim].values[value] = (dimensions[dim].values[value] || 0) + 1;
+							dimensions[dim].allValues.add(value); // ✅ 永久保存
+						  }
 						});
+					} else {
+						console.warn(`⚠️ Missing or invalid field "${dim}" in row:`, d);
 					}
 				});
 			});
-	
-			draw();
+			draw(); // 初次渲染界面
 		} else {
 			console.error("Invalid data format. Expected an array.");
 		}
 	};
-	
 
+
+	// 更新过滤器逻辑
 	var updateFilters = function(dim, item) {
-		// 处理 & 分隔的情况，将 item 分割成多个单独的项
-		var items = item.split('&').map(function(value) { return value.trim(); });
+		var items = item.split('&').map(value => value.trim());
 		items.forEach(function(singleItem) {
 			if (dimensions[dim].filters.has(singleItem)) {
 				dimensions[dim].filters.remove(singleItem);
@@ -78,99 +73,60 @@
 				dimensions[dim].filters.add(singleItem);
 			}
 		});
-	
-		// 更新筛选状态的显示
-		if (!existFilters()) {
-			d3.select(".elastic-list-filters").select("p")//.text("No filters applied");
-		} else {
-			var values = [];
-			for (var i = 0; i < dimensionsArray.length; i++) {
-				values = values.concat(Array.from(dimensions[dimensionsArray[i]].filters));
-			}
-			d3.select(".elastic-list-filters").select("p")//.text("Filtering by: " + values.join(', '));
-		}
-	
-		// 调用更新数据显示的函数
 		updateData();
 	};
 
 
-
-	var existFilters = function()
-	{
-		var exist = false;
-		for(var i=0; i<dimensionsArray.length && exist == false; i++)
-			exist = exist || !dimensions[dimensionsArray[i]].filters.empty();
-		return exist;
-	}
-
-
-
+	// 更新文档过滤结果和维度计数
 	var updateData = function() {
-		// 重置所有计数器
-		dimensionsArray.forEach(function(dim) {
-			d3.keys(dimensions[dim].values).forEach(function(key) {
-				dimensions[dim].values[key] = 0;
-			});
+		dimensionsArray.forEach(dim => {
+			dimensions[dim].values = {}; // 清空当前值计数
 		});
-	
-		// 如果没有激活的筛选器，所有文档都视为通过筛选条件
-		if (!existFilters()) {
-			documents.forEach(function(d) {
-				d.__filtered__ = true;
-				dimensionsArray.forEach(function(dim) {
-					d[dim].split('&').map(function(value) { return value.trim(); }).forEach(function(value) {
-						if (value) { // 确保值不为空
-							dimensions[dim].values[value] = (dimensions[dim].values[value] || 0) + 1;
-						}
-					});
-				});
-			});
-		} else {
-			// 否则，遍历文档以查看哪些文档通过筛选条件
-			documents.forEach(function(d) {
-				// 文档通过筛选的初始假设为true
-				d.__filtered__ = true;
-				dimensionsArray.forEach(function(dim) {
-					if (!dimensions[dim].filters.empty()) {
-						// 处理可能包含 '&' 的字段
-						var fieldValues = d[dim].split('&').map(function(value) { return value.trim(); });
-						// 检查分割后的值中至少有一个在筛选集合中
-						var filterPass = fieldValues.some(value => dimensions[dim].filters.has(value));
-						// 更新文档的筛选状态
-						d.__filtered__ = d.__filtered__ && filterPass;
+
+		documents.forEach(function(d) {
+			let match = true;
+
+			for (let dim of dimensionsArray) {
+				const field = d[dim];
+				if (!field) continue;
+				const values = field.split('&').map(s => s.trim());
+				const filters = dimensions[dim].filters;
+
+				if (!filters.empty()) {
+					if (!values.some(v => filters.has(v))) {
+						match = false;
+						break;
 					}
-				});
-	
-				// 如果文档通过了筛选
-				if (d.__filtered__) {
-					dimensionsArray.forEach(function(dim) {
-						d[dim].split('&').forEach(function(value) {
-							value = value.trim();
-							if (value) { // 确保值不为空
-								dimensions[dim].values[value] = (dimensions[dim].values[value] || 0) + 1;
-							}
-						});
-					});
 				}
-			});
-		}
-	
-		// 重新绘制图表或更新界面
+			}
+
+			d.__filtered__ = match;
+
+			if (match) {
+				dimensionsArray.forEach(function(dim) {
+					const field = d[dim];
+					if (!field) return;
+					field.split('&').forEach(function(v) {
+						const value = v.trim();
+						if (!value) return;
+						dimensions[dim].values[value] = (dimensions[dim].values[value] || 0) + 1;
+					});
+				});
+			}
+		});
+
 		redraw();
-	}
+	};
 
 
+	// 绘制维度头、容器等结构
+	var draw = function() {
+		margin = {top: 20, right: 20, bottom: 20, left: 20},
+		width = 2000 - margin.left - margin.right,
+		height = 400 - margin.top - margin.bottom + dimensionHeaderHeight,
+		value_cell_padding = 1,
+		value_cell_height = 45;
 
-
-	var draw = function()
-	{
-		margin = {top: 20, right: 20, bottom: 30, left: 40},
-	    	width = 1170 - margin.left - margin.right,
-    		height = 400 - margin.top - margin.bottom + dimensionHeaderHeight,
-    		value_cell_padding = 1,
-    		value_cell_height = 45;
-	
 		x = d3.scale.ordinal()
 			.domain(dimensionsArray)
 			.rangeRoundBands([0, width]);
@@ -182,200 +138,138 @@
 		elasticList = d3.select("#elastic-list")
 			.attr("class", "elastic-list")
 			.style("width", width + "px")
-		    .style("height", height + "px");
+			.style("height", height + "px");
 
-		//dimension headers
+		// 维度列标题
 		elasticList.append("div")
 			.attr("class", "elastic-list-dimension-headers")
 			.selectAll(".elastic-list-dimension-header")
 			.data(dimensionsArray)
 			.enter()
 			.append("div")
-				.attr("class", "elastic-list-dimension-header")
-				.style("width", x.rangeBand() + "px")
-				.style("height", dimensionHeaderHeight + "px")
-				.text(function(d) { return (d == affiliationDim[0])?	affiliationDim[1].capitalize() : d.capitalize();});
+			.attr("class", "elastic-list-dimension-header")
+			.style("width", x.rangeBand() + "px")
+			.style("height", dimensionHeaderHeight + "px")
+			.text(function(d) {
+				return (d == affiliationDim[0]) ? affiliationDim[1].capitalize() : d.capitalize();
+			});
 
-		//header with the active filters
+		// 筛选信息展示栏
 		d3.select("#filtering").append("div")
 			.attr("class", "elastic-list-filters")
 			.style("height", header_height)
-			.append("p")
-				//.text("No filters applied");
+			.append("p");
 
+		// 结果展示区域
 		d3.select("#results")
 			.style("width", width + "px")
 			.style("height", 300 + "px");
 
 		redraw();
-	}
+	};
 
 
-
-	var setHeightCell = function(dimNode, d)
-	{
-		var minValue = dimNode.attributes["__minvalue__"].value;
-		return (d.value == 0)? heightEmpty : (value_cell_height + (0*d.value/minValue)) + "px";
-	}
-
-	var redraw = function()
-	{
+	// ✅ 完整修复后的 redraw 函数：包含 exit 清理和正确的 enter 构建逻辑
+	var redraw = function() {
 		var transitionTime = 1000;
-		var getMinValueDimension = function(dimension, i)
-		{
-			//how to estimate the height of an item:
-			//minimum height for an item is 20px, from here take the minimum value from
-			//all items data, this value will be the base to calculate the factor to apply to
-			//the rest of values to get a new height from the 20px minimum height
+
+		var getMinValueDimension = function(dimension) {
 			return d3.min(
-					d3.values(dimension.value.values).filter(function(value)
-					{
-						return value >0;
-					})
-				);
-		}
-		var getValuesDimension = function(dimension, i)
-		{
-			if(!sortValues)
-				return d3.entries(dimension.value.values);
-			else
-				return d3.entries(dimension.value.values)
-					.sort(function(a, b)
-					{
-						return (a.value > b.value)?	-1:(a.value < b.value)? 1 : 0;
-					})
-					.filter(function(obj)
-					{
-						return obj.key != "";
-					});
-		}
-
-		//join new data with old elements, if any
-		cols = elasticList
-			.selectAll(".elastic-list-dimension")
-			.data(d3.entries(dimensions));
-
-		cols.attr("__minvalue__", getMinValueDimension);
-
-		//COL UPDATE SELECTION
-		cols.selectAll(".elastic-list-dimension-item")
-			.data(getValuesDimension)
-			.classed("filter", function(d)
-				{
-					return dimensions[this.parentNode.__data__.key].filters.has(d.key);
+				d3.values(dimension.value.values).filter(function(value) {
+					return value > 0;
 				})
-			.transition()
-			.duration(transitionTime)
-				.style("height", function(d)
-				{
-					return setHeightCell(this.parentNode, d);
-				});	
+			);
+		};
 
+		var getValuesDimension = function(dimension) {
+			var entries = d3.entries(dimension.value.values);
+			if (!sortValues) return entries;
+			return entries
+				.sort((a, b) => (a.value > b.value ? -1 : a.value < b.value ? 1 : 0))
+				.filter(obj => obj.key !== "");
+		};
 
-		//COLS ENTER SELECTION, create new elements as needed 
-		var items_in_new_cols = cols.enter()
-			.append("div")
-			.attr("class", "elastic-list-dimension")
-			.style("width", x.rangeBand() + "px")
-			.style("height", (height - dimensionHeaderHeight) + "px")
-			.attr("__minvalue__", getMinValueDimension)
-			.selectAll(".elastic-list-dimension-item")
-			.data(getValuesDimension);
+		// 清除旧列和旧项
+		elasticList.selectAll(".elastic-list-dimension").remove();
 
-		items_in_new_cols.enter()
-			.append("div")
-			.attr("class", "elastic-list-dimension-item")
-			.style("height", function(d)
-			{
-				return setHeightCell(this.parentNode, d);
-			})
-			.style("width", x.rangeBand() + "px")
-			.style("left", 0)
-			.on("mouseover", function(d)
-			{
-				if(d.value == 0)
-				{
-					tooltip
-	                  .html(d.key + ": no matchings")
-	                  .style("visibility", "visible");          
-				}
-				else if(d3.select(this).text().indexOf("...") > -1)
-				{
-					tooltip
-	                  .html(d.key + ": " + d.value)
-	                  .style("visibility", "visible");          	
-				}              	
+		// 为每个维度构建列
+		d3.entries(dimensions).forEach(function(dimEntry) {
+			var dimName = dimEntry.key;
+			var values = getValuesDimension(dimEntry);
+			var minValue = getMinValueDimension(dimEntry);
 
-				d3.select(this).classed("elastic-list-dimension-item-hover", true);
-			})
-			.on("mousemove", function(d)
-			{
-				if(d.value == 0 || d3.select(this).text().indexOf("...") > -1)
-					tooltip.style("top", (d3.event.pageY - 20)+"px").style("left",(d3.event.pageX + 5)+"px");  
-			})
-			.on("mouseout", function(d)
-			{
-				tooltip.style("visibility", "hidden");
-				d3.select(this).classed("elastic-list-dimension-item-hover", false);
-			})
-			.on("click", function(d)
-			{
-				tooltip.style("visibility", "hidden");
+			var column = elasticList.append("div")
+				.attr("class", "elastic-list-dimension")
+				.attr("__minvalue__", minValue)
+				.style("width", x.rangeBand() + "px")
+				.style("height", (height - dimensionHeaderHeight) + "px");
 
-				//send filter to add and its dimension
-				updateFilters(this.parentNode.__data__.key, d.key);
-
-				d3.select(this).classed("elastic-list-dimension-item-hover", false);
-				d3.select(this).classed("filter", function(d)
-				{
-					return dimensions[this.parentNode.__data__.key].filters.has(d.key);
+			var items = column.selectAll(".elastic-list-dimension-item")
+				.data(values)
+				.enter()
+				.append("div")
+				.attr("class", "elastic-list-dimension-item")
+				.style("width", x.rangeBand() + "px")
+				.style("height", function(d) {
+					return d.value === 0 ? heightEmpty : (isTall(dimName) ? 80 : 45) + "px";
+				})
+				.classed("filter", d => dimensions[dimName].filters.has(d.key))
+				.on("mouseover", function(d) {
+					if (d.value === 0 || d3.select(this).text().indexOf("...") > -1) {
+						tooltip
+							.html(d.key + ": " + (d.value === 0 ? "no matchings" : d.value))
+							.style("visibility", "visible");
+					}
+					d3.select(this).classed("elastic-list-dimension-item-hover", true);
+				})
+				.on("mousemove", function() {
+					tooltip.style("top", (d3.event.pageY - 20) + "px")
+						.style("left", (d3.event.pageX + 5) + "px");
+				})
+				.on("mouseout", function() {
+					tooltip.style("visibility", "hidden");
+					d3.select(this).classed("elastic-list-dimension-item-hover", false);
+				})
+				.on("click", function(d) {
+					tooltip.style("visibility", "hidden");
+					updateFilters(dimName, d.key);
+					d3.select(this).classed("elastic-list-dimension-item-hover", false);
+					d3.select(this).classed("filter", dimensions[dimName].filters.has(d.key));
 				});
-			});			
-		
-		//update text data for each item
-		items = elasticList.selectAll(".elastic-list-dimension-item");
-		items.each(function(d, i)
-		{	
-			//remove all <p>. If this terms has occurrences based on the filter criteria, add <p> again
-			d3.select(this).selectAll("p").remove();
-			if(d.value >0)
-			{
-				d3.select(this).append("p")
-					.html((d.key.length > trimmerAt)?	d.key.substring(0,trimmerAt) + "...":d.key)
-					.style("opacity", 0)
-					.attr('class', 'key')
-					.transition()
-					.duration(transitionTime)
-					.delay(200)
-					.style("opacity", 1);
 
-				d3.select(this).append("p")
-					.html("<b>" + d.value + "</b>")
-					.style("opacity", 0)
-					.attr('class', 'value')
-					.transition()
-					.duration(transitionTime)
-					.delay(200)
-					.style("opacity", 1);		
-			}			
+			// 添加文字内容
+			items.each(function(d) {
+				d3.select(this).selectAll("p").remove();
+				if (d.value > 0) {
+					const maxLength = (dimName === 'Title' || dimName === 'Application Domain') ? 70 : trimmerAt;
+					d3.select(this).append("p")
+						.attr("class", "key")
+						.html(d.key.length > maxLength ? d.key.substring(0, maxLength) + "..." : d.key)
+						.style("opacity", 0)
+						.transition().duration(transitionTime).delay(200).style("opacity", 1);
+					d3.select(this).append("p")
+						.attr("class", "value")
+						.html("<b>" + d.value + "</b>")
+						.style("opacity", 0)
+						.transition().duration(transitionTime).delay(200).style("opacity", 1);
+				}
+			});
 		});
 
+		// 展示筛选结果
 		var html = "";
-		documents.forEach(function(d)
-		{
-			if(d.__filtered__ )
-				//html += "<p>" + d.Title + " , "  + d.PublicationYear + " , "  + d.PublicationVenue + d.
-				html += "<p style='margin-bottom: 5px;'>" + d.Title 
-			//+ " - " + "<b>" + d.value + " " + d.Array + ". </b>" //+ d.category.capitalize() + ", " + d.country + "<span class='price-motivation'> " + d.motivation+ "</span></p>"
-		});		
+		documents.forEach(function(d) {
+			if (d.__filtered__)
+				html += "<p style='margin-bottom: 5px;'>" + d.Title + "</p>";
+		});
 		d3.select("#results").html(html);
-		d3.select("#results-count").html("Found " + d3.select("#results").selectAll("p")[0].length);		
-	}
+		d3.select("#results-count").html("Found " + d3.select("#results").selectAll("p").size());
+	};
 
-	String.prototype.capitalize = function() 
+	String.prototype.capitalize = function()
 	{
     	return this.charAt(0).toUpperCase() + this.slice(1);
 	}
 
-	d3.csv("Tab.csv", onDataLoaded);
+	d3.csv("Tab1.csv", onDataLoaded);
 }());
